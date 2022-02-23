@@ -1,0 +1,176 @@
+import pygame
+import sys
+from random import randint
+import pygame as pg
+import time
+
+
+BLOCK_SIZE = 60
+game_over = False
+pygame.font.init()
+font_style = pygame.font.SysFont(None, 50)
+balls = []
+col = 0
+
+width, height = 420, 600
+pygame.display.set_caption("Появление блоков после каждого хода")
+all_rects = []
+fps = 100
+screen = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+move = pygame.USEREVENT
+pygame.time.set_timer(move, 2)
+pygame.init()
+arrow = pygame.image.load("arrow1.png")
+r = arrow.get_rect()
+pygame.mouse.set_visible(False)
+dis = pygame.display.set_mode((width, width))
+color_list = ["black"] * 70
+
+for i in range(0, height, BLOCK_SIZE):
+    for j in range(0, width, BLOCK_SIZE):
+        rect = pygame.Rect(j, i, BLOCK_SIZE - 1, BLOCK_SIZE - 1)
+        all_rects.append(rect)
+
+sc = pygame.display.set_mode((width, height))
+background = pg.Surface((420, 700))
+
+sc.blit(background, (0, 0))
+pg.display.update()
+x2 = 0
+y2 = 0
+ball_radius = 10
+ball_speed = 6
+ball_rect = int(ball_radius * 2 ** 0.5)
+ball = pygame.Rect(20, 20, ball_rect, ball_rect)
+
+pygame.display.update()
+
+
+class Ball:
+    def __init__(self, obj, x, y, v, t):
+        self.obj = obj
+        self.x = x
+        self.y = y
+        self.dx = -v * t
+        self.dy = -v
+
+    def move(self, block=None):
+        if self.obj.centerx < ball_radius or self.obj.centerx > width - ball_radius:
+            self.dx = -self.dx
+        # collision top
+        if self.obj.centery < ball_radius:
+            self.dy = -self.dy
+        if block:
+            if self.dx > 0:
+                delta_x = self.obj.right - block.left
+            else:
+                delta_x = block.right - self.obj.left
+            if self.dy > 0:
+                delta_y = self.obj.bottom - block.top
+            else:
+                delta_y = block.bottom - self.obj.top
+
+            if abs(delta_x - delta_y) < 10:
+                self.dx = -self.dx
+                self.dy = -self.dy
+            elif delta_x > delta_y:
+                self.dy = -self.dy
+            elif delta_y > delta_x:
+                self.dx = -self.dx
+
+        self.x += self.dx
+        self.y += self.dy
+
+
+
+def message(msg, color):
+    mesg = font_style.render(msg, True, color)
+    dis.blit(mesg, [width / 8, height / 2])
+
+
+n = -1
+# block_list = []
+while not game_over:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            sys.exit()
+
+
+        elif event.type == pygame.MOUSEMOTION:
+            r.topleft = event.pos
+
+
+        elif balls and event.type == move:
+            for b in balls:
+                b.move()
+                x2 = b.x
+                y2 = b.y
+                ball.x = x2
+                ball.y = y2
+                if b.y == 590:
+                    balls = []
+
+        elif event.type == pygame.KEYDOWN and balls == []:
+            KEY = 2
+            if event.key == pygame.K_LEFT:
+                KEY = 1
+            elif event.key == pygame.K_RIGHT:
+                KEY = -1
+            elif event.key == pygame.K_UP:
+                KEY = 0
+            if KEY != 2:
+                pos = pg.mouse.get_pos()
+                a = [pos[0], 590, 1]
+                balls.append(Ball(ball, *a, KEY))
+            # КИРПИЧИКИ
+            n += 1
+            for i in range(5):
+                for g, rect in enumerate(all_rects[6*n:7*(n+1)]):
+                    if rect.collidepoint(randint(0, 420), 58 * n):
+                        # if rect.collidepoint(420 // randint(1, 7) + 5, 58 * n):
+                        if color_list[g + 6*n] == "black":
+                            color_list[g + 6*n] = (randint(0, 255), randint(0, 255), randint(0, 255))
+
+            # КИРПИЧИКИ
+
+        if n == 9:
+            game_over = True
+        # if x2 < 400:
+        #     x2 += 0.1
+        # else:
+        #     x2 = 0
+    screen.fill(pygame.Color("black"))
+
+    hit_index = ball.collidelist(all_rects)
+    if hit_index != -1:
+        # print(hit_index)
+        if color_list[hit_index] != (0,0,0) and color_list[hit_index] != 'black':
+            hit_rect = all_rects[hit_index]
+            color_list[hit_index] = (0,0,0)
+            for b in balls:
+                b.move(hit_rect)
+            # print(all_rects)
+            # print(color_list, '\n')
+            # print('hitted')
+
+    for i, rect in enumerate(all_rects):
+            pygame.draw.rect(sc, color_list[i], rect)
+
+
+    pygame.display.flip()
+    replaced_text = ((str(r).replace('<rect(', '')).replace(')>', '')).split(", ")
+    x1, y1 = int(replaced_text[0]), int(replaced_text[1])
+    background.blit(sc, (x2, y2))
+    sc.blit(arrow, (x1, y1))
+
+    # sc.blit(b, (b.x, b.y))
+
+    # sc.blit(surf, (x2, y2))
+    pygame.draw.circle(sc, pygame.Color('white'), (x2, y2), ball_radius)
+    # sc.blit(surf, (x2, y2))
+    pg.display.update()
+    pg.time.delay(30)
+message("You lost! Game over.", 'red')
+pygame.display.update()
+time.sleep(3)
