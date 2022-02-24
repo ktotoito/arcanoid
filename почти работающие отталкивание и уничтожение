@@ -3,7 +3,6 @@ import sys
 from random import randint
 import pygame as pg
 import time
-from itertools import chain
 
 BLOCK_SIZE = 60
 game_over = False
