@@ -58,7 +58,6 @@ class Ball:
         # dх отвечает за направление движение вдоль оси ох
         # нужно сделать 3 варианта dx = v/ -v/ 0
         # то есть движение вправо влево и  вертикально вверх
-        # зачем вертикально вверх? на мой взгляд, это серьёзно так упростит игру.
 
     def move(self, block=None):
         if self.obj.centerx < ball_radius or self.obj.centerx > width - ball_radius:
@@ -116,7 +115,6 @@ def message(msg, color):
 
 
 n = 0
-# block_list = []
 while not game_over:
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -162,7 +160,7 @@ while not game_over:
                 a = [pos[0], 590, 1]
                 balls.append(Ball(ball, *a, KEY))
             # if event.button == 1:
-            # КИРПИЧИКИ
+            # КИРПИЧИ
             n += 1
             for i in range(4):
                 for g, rect in enumerate(all_rects[6*(n-1):7*n]):
@@ -170,30 +168,6 @@ while not game_over:
                         # if rect.collidepoint(420 // randint(1, 7) + 5, 58 * n):
                         if color_list[g + 6*(n-1)] == "black":
                             color_list[g + 6*(n-1)] = (randint(0, 255), randint(0, 255), randint(0, 255))
-            #     if i == 4:
-            # p = color_list
-            # h = []
-            # # block_list.extend(all_rects[:7])
-            # for m in range(7):
-            #     if color_list[n][m] != (0, 0, 0):
-            #         h.append(all_rects[m])
-            #         # block_list.append(all_rects[m])
-            #         print(color_list[n][m], all_rects[m], m)
-            #     elif color_list[n][m] == (0, 0, 0):
-            #         p.remove(color_list[n][m])
-            #
-            # block_list.extend(h)
-            # color_list = p[:]
-            #
-            # all_rects = all_rects[6:]
-            # print(block_list)
-            # print(color_list)
-            # print(len(block_list))
-            # print(len(color_list))
-            # print(len(all_rects))
-            # print(all_rects, '\n')
-
-            # КИРПИЧИКИ
 
         if n == 10:
             game_over = True
@@ -206,9 +180,6 @@ while not game_over:
     # print(block_list)
     # print(color_list)
     # print(all_rects)
-    # for i, g in enumerate(all_rects2):
-    #     for j, rect in enumerate(g):
-    #         pygame.draw.rect(sc, color_list[j][i], rect)
 
     hit_index = ball.collidelist(all_rects)
     if hit_index != -1:
@@ -225,9 +196,6 @@ while not game_over:
 
     for i, rect in enumerate(all_rects):
             pygame.draw.rect(sc, color_list[i], rect)
-
-    # for i, rect in enumerate(block_list):
-    #     pygame.draw.rect(sc, color_list[i%10][n], rect)
 
     pygame.display.flip()
     replaced_text = ((str(r).replace('<rect(', '')).replace(')>', '')).split(", ")
