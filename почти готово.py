@@ -56,7 +56,6 @@ cur = con.cursor()
 
 result = cur.execute("""
 SELECT счёт from the_best_score """).fetchall()
-print(*result)
 
 
 class Ball:
@@ -214,8 +213,7 @@ while not game_over:
         pg.display.flip()
 
     else:
-        sc.blit(gameover.image, (0, 0))
-        print(gameover.rect.centery)
+        sc.blit(gameover.image, (0, -100))
         pg.mouse.set_visible(True)
         if gameover.rect.bottom >= height:
             game_over = True
