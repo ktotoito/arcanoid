@@ -26,6 +26,7 @@ pg.mixer.music.set_volume(volume)
 # volume отвечает за уровень громкости
 sound1 = pg.mixer.Sound('shoot.mp3')
 sound2 = pg.mixer.Sound('Game over.mp3')
+sound3 = pg.mixer.Sound('winsound.mp3')
 sound2.set_volume(volume)
 pg.display.set_caption("Balls and blocks")
 block_list = []
@@ -58,13 +59,9 @@ ball_radius = 10
 ball_rect = int(ball_radius * 2)
 ball = pg.Rect(x2, y2, ball_rect, ball_rect)
 
+
 con = sqlite3.connect('records')
 cur = con.cursor()
-
-
-class Menu:
-    pass
-
 
 image1 = pg.image.load('win.png')
 win = pg.sprite.Sprite()
@@ -77,28 +74,37 @@ win.rect.y = 0
 
 class Button(pg.sprite.Sprite):
 
-    def __init__(self, img, y, level, *group):
+    def __init__(self, imeg, imeg2, y, level, *group):
         super().__init__(*group)
         self.image = pg.Surface((66, 218))
-        self.image = pg.image.load(img)
+        self.imeg = pg.image.load(imeg)
+        self.image = self.imeg
         self.rect = self.image.get_rect()
         self.rect.x = 101
         self.rect.y = y
         self.level = level
+        self.img = pg.image.load(imeg2)
 
     def update(self, *args):
+        g = pg.mouse.get_pos()
+        if args and self.rect.collidepoint(g):
+            self.image = self.img
+        else:
+            self.image = self.imeg
         if args and args[0].type == pg.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint(args[0].pos):
             global game_is_started
             global levels
+            pg.mixer.music.play(99999)
             game_is_started = True
             levels[self.level] = 1
 
 
 all_sprites = pg.sprite.Group()
-Button('button1.png', 350, 'level_1', all_sprites)
-Button('button2.png', 426, 'level_2', all_sprites)
-Button('infinity.png', 502, 'level_infinity', all_sprites)
+volumes = pg.sprite.Group()
+Button('button1.png', 'button1.1.png', 350, 'level_1', all_sprites)
+Button('button2.png', 'button2.1.png', 426, 'level_2', all_sprites)
+Button('infinity.png', 'infinity.1.png', 502, 'level_infinity', all_sprites)
 
 
 class Ball:
@@ -240,15 +246,16 @@ while not game_over:
                         balls.append(Ball(ball, *a, KEY))
                         sound1.play()
 
-                        n += 1
+                        # n = ceil(n + 0.5)
+                        # n += 1
 
-                        # if n % 2 == 1:
-                        if levels['level_infinity']:
-                            color_list = painter(color_list, block_list, colors_dict).copy()
-                        elif levels['level_1']:
-                            color_list = painter(color_list, block_list, colors_dict, n, 5).copy()
-                        elif levels['level_2']:
-                            color_list = painter(color_list, block_list, colors_dict, n, 15).copy()
+                        if n % 2 == 1:
+                            if levels['level_infinity']:
+                                color_list = painter(color_list, block_list, colors_dict).copy()
+                            elif levels['level_1']:
+                                color_list = painter(color_list, block_list, colors_dict, n, 10).copy()
+                            elif levels['level_2']:
+                                color_list = painter(color_list, block_list, colors_dict, n, 20).copy()
 
         hit_index = ball.collidelist(block_list)
         if hit_index != -1:
@@ -278,13 +285,14 @@ while not game_over:
                 if d:
                     k += 1
                     d = 0
-                message(f'Score: {k}', 342, 25, 'snow')
+                message(f'Score: {k}', 342, 25, 'orangered')
             pg.display.flip()
 
         else:
             if not game_win:
                 sound2.play()
             else:
+                sound3.play()
                 cur.execute("""UPDATE the_best_score
                     SET num_of_wins = {} WHERE номер = {}""".format(k, list(levels.values()).index(1) + 1)).fetchall()
             pg.mixer.music.stop()
@@ -299,7 +307,6 @@ while not game_over:
                     sc.blit(win.image, (0, 0))
                 pg.mouse.set_visible(True)
                 # message(f'Your score: {k}', 500, 100, 'snow')
-                # # message('Press space to restart the game', 550, 100, 'snow', pg.font.SysFont(None, 30))
                 for event in pg.event.get():
                     if event.type == pg.QUIT:
                         sys.exit()
@@ -308,7 +315,6 @@ while not game_over:
                         if event.key == pg.K_SPACE:
                             game_is_started = False
                             n = 0
-                            color_list.clear()
                             color_list = [''] * 70
                             k = 0
                             result = cur.execute("""
@@ -340,6 +346,7 @@ while not game_over:
     pg.display.flip()
     pg.display.update()
     clock.tick(fps)
+
 
 con.commit()
 con.close()
