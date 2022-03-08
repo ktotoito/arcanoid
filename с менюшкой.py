@@ -42,7 +42,7 @@ dis = pg.display.set_mode((width, width))
 color_list = [""] * 70
 
 img = pg.image.load('112.jpg').convert()
-img2 = pg.image.load('menu.png').convert()
+img2 = pg.image.load('menu1.png').convert()
 for i in range(0, height, BLOCK_SIZE):
     for j in range(0, width, BLOCK_SIZE):
         rect = pg.Rect(j, i, BLOCK_SIZE - 1, BLOCK_SIZE - 1)
@@ -284,6 +284,9 @@ while not game_over:
         else:
             if not game_win:
                 sound2.play()
+            else:
+                cur.execute("""UPDATE the_best_score
+                    SET num_of_wins = {} WHERE номер = {}""".format(k, list(levels.values()).index(1) + 1)).fetchall()
             pg.mixer.music.stop()
             if k > result[list(levels.values()).index(1)][0]:
                 cur.execute("""UPDATE the_best_score
@@ -305,6 +308,7 @@ while not game_over:
                         if event.key == pg.K_SPACE:
                             game_is_started = False
                             n = 0
+                            color_list.clear()
                             color_list = [''] * 70
                             k = 0
                             result = cur.execute("""
